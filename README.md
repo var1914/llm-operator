@@ -1,114 +1,204 @@
-# llm-operator
-// TODO(user): Add simple overview of use/purpose
+# LLM Operator
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+A Kubernetes Operator for deploying and managing Large Language Models on Kubernetes.
 
-## Getting Started
+## Overview
 
-### Prerequisites
-- go version v1.22.0+
-- docker version 17.03+.
-- kubectl version v1.11.3+.
-- Access to a Kubernetes v1.11.3+ cluster.
+This project provides a Kubernetes Operator that allows you to deploy and manage LLM models in a Kubernetes-native way. It defines two Custom Resource Definitions (CRDs):
 
-### To Deploy on the cluster
-**Build and push your image to the location specified by `IMG`:**
+- **LLMModel**: Defines the model specifications
+- **LLMDeployment**: Handles the actual deployment of models with configurable replicas and resource settings
 
-```sh
-make docker-build docker-push IMG=<some-registry>/llm-operator:tag
+## Prerequisites
+
+- Go 1.19+
+- Kubernetes cluster v1.22+
+- kubectl
+- Operator SDK v1.28.0+
+- Docker (for building images)
+- Helm v3+
+
+## Installation
+
+### 1. Install Required Tools
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/llm-operator.git
+cd llm-operator
 ```
 
-**NOTE:** This image ought to be published in the personal registry you specified.
-And it is required to have access to pull the image from the working environment.
-Make sure you have the proper permission to the registry if the above commands don’t work.
+### 3. Deploy the Operator
 
-**Install the CRDs into the cluster:**
+#### Option 1: Using Pre-built Images
 
-```sh
-make install
+```bash
+# Create namespace
+kubectl create namespace llm-system
+
+# Install CRDs
+kubectl apply -f helm-charts/llm-operator/crds/
+
+# Install the operator
+helm install llm-operator ./helm-charts/llm-operator --namespace llm-system
 ```
 
-**Deploy the Manager to the cluster with the image specified by `IMG`:**
+#### Option 2: Building From Source
 
-```sh
-make deploy IMG=<some-registry>/llm-operator:tag
+```bash
+# Build and push the operator image (replace with your registry)
+make docker-build docker-push IMG=myregistry/llm-operator:v0.1.0
+
+# Update the values.yaml file with your image
+nano helm-charts/llm-operator/values.yaml
+
+# Install CRDs
+kubectl apply -f helm-charts/llm-operator/crds/
+
+# Install the operator
+helm install llm-operator ./helm-charts/llm-operator --namespace llm-system
 ```
 
-> **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
-privileges or be logged in as admin.
+## Usage
 
-**Create instances of your solution**
-You can apply the samples (examples) from the config/sample:
+### 1. Create an LLMModel
 
-```sh
-kubectl apply -k config/samples/
+```yaml
+apiVersion: llm.example.com/v1alpha1
+kind: LLMModel
+metadata:
+  name: gpt-small
+spec:
+  modelName: "GPT-Small"
+  image: "your-registry/gpt-small:v1"
+  resources:
+    cpu: "2"
+    memory: "4Gi"
 ```
 
->**NOTE**: Ensure that the samples has default values to test it out.
+Save this as `model.yaml` and apply:
 
-### To Uninstall
-**Delete the instances (CRs) from the cluster:**
-
-```sh
-kubectl delete -k config/samples/
+```bash
+kubectl apply -f model.yaml
 ```
 
-**Delete the APIs(CRDs) from the cluster:**
+### 2. Create an LLMDeployment
 
-```sh
-make uninstall
+```yaml
+apiVersion: llm.example.com/v1alpha1
+kind: LLMDeployment
+metadata:
+  name: chat-service
+spec:
+  modelRef: "gpt-small"
+  replicas: 2
+  port: 8080
 ```
 
-**UnDeploy the controller from the cluster:**
+Save this as `deployment.yaml` and apply:
 
-```sh
-make undeploy
+```bash
+kubectl apply -f deployment.yaml
 ```
 
-## Project Distribution
+### 3. Verify the Deployment
 
-Following are the steps to build the installer and distribute this project to users.
+```bash
+# Check LLM custom resources
+kubectl get llmmodels
+kubectl get llmdeployments
 
-1. Build the installer for the image built and published in the registry:
-
-```sh
-make build-installer IMG=<some-registry>/llm-operator:tag
+# Check the created Kubernetes resources
+kubectl get deployments
+kubectl get services
 ```
 
-NOTE: The makefile target mentioned above generates an 'install.yaml'
-file in the dist directory. This file contains all the resources built
-with Kustomize, which are necessary to install this project without
-its dependencies.
+## Project Structure
 
-2. Using the installer
-
-Users can just run kubectl apply -f <URL for YAML BUNDLE> to install the project, i.e.:
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/<org>/llm-operator/<tag or branch>/dist/install.yaml
 ```
+llm-operator/
+├── api/
+│   └── v1alpha1/             # API definitions for CRDs
+│       ├── llmmodel_types.go
+│       └── llmdeployment_types.go
+├── controllers/              # Controller implementations
+│   ├── llmmodel_controller.go
+│   └── llmdeployment_controller.go
+├── config/                   # Generated configuration
+│   ├── crd/                  # Generated CRDs
+│   ├── rbac/                 # RBAC configurations
+│   └── manager/              # Manager configurations
+├── helm-charts/              # Helm charts for deployment
+│   └── llm-operator/
+│       ├── crds/             # CRDs to be installed
+│       ├── templates/        # Helm templates
+│       ├── Chart.yaml
+│       └── values.yaml
+└── main.go                   # Operator entrypoint
+```
+
+## Developing the Operator
+
+### 1. Create a New Operator
+
+```bash
+# Initialize a new operator project
+operator-sdk init --domain example.com --repo github.com/yourusername/llm-operator
+
+# Create APIs
+operator-sdk create api --group llm --version v1alpha1 --kind LLMModel --resource --controller
+operator-sdk create api --group llm --version v1alpha1 --kind LLMDeployment --resource --controller
+```
+
+### 2. Customize the CRDs
+
+Modify the files in `api/v1alpha1/` to define your custom resources.
+
+### 3. Implement Controllers
+
+Implement the reconciliation logic in the controller files in the `controllers/` directory.
+
+### 4. Build and Deploy
+
+```bash
+# Generate manifests
+make manifests
+
+# Build and push the image
+make docker-build docker-push IMG=myregistry/llm-operator:v0.1.0
+
+# Deploy
+make deploy IMG=myregistry/llm-operator:v0.1.0
+```
+
+## Custom Resource Definitions
+
+### LLMModel
+
+The `LLMModel` CRD defines the model to be deployed:
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| `spec.modelName` | Name of the LLM model | Yes |
+| `spec.image` | Container image for the model | Yes |
+| `spec.resources.cpu` | CPU resource requirements | No |
+| `spec.resources.memory` | Memory resource requirements | No |
+
+### LLMDeployment
+
+The `LLMDeployment` CRD defines how to deploy a model:
+
+| Field | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `spec.modelRef` | Reference to an LLMModel resource | Yes | - |
+| `spec.replicas` | Number of replicas to deploy | Yes | - |
+| `spec.port` | Port the model service will listen on | No | 8080 |
 
 ## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
 
-**NOTE:** Run `make help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-Copyright 2025.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+This project is licensed under the MIT License - see the LICENSE file for details.
