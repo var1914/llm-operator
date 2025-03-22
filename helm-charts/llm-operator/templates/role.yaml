@@ -1,0 +1,20 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: llm-operator-role
+rules:
+# Allow operator to manage LLM CRs
+- apiGroups: ["llm.example.com"]
+  resources: ["llmmodels", "llmdeployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# Allow operator to update status subresource
+- apiGroups: ["llm.example.com"]
+  resources: ["llmmodels/status", "llmdeployments/status"]
+  verbs: ["get", "update", "patch"]
+# Allow operator to create and manage deployments and services
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["services", "pods"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

@@ -1,0 +1,11 @@
+image:
+  repository: asia-south1-docker.pkg.dev/playground-453812/llm-gitops/llm-operator
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: llm-operator
