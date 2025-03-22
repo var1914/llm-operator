@@ -1,0 +1,27 @@
+# permissions for end users to edit llmmodels.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: llm-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: llmmodel-editor-role
+rules:
+- apiGroups:
+  - llm.llm.gitops
+  resources:
+  - llmmodels
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - llm.llm.gitops
+  resources:
+  - llmmodels/status
+  verbs:
+  - get

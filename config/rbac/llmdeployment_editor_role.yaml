@@ -1,0 +1,27 @@
+# permissions for end users to edit llmdeployments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: llm-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: llmdeployment-editor-role
+rules:
+- apiGroups:
+  - llm.llm.gitops
+  resources:
+  - llmdeployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - llm.llm.gitops
+  resources:
+  - llmdeployments/status
+  verbs:
+  - get
