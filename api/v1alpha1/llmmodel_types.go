@@ -14,6 +14,9 @@ type LLMModelSpec struct {
 
 	// Resources defines the resource requirements for the model
 	Resources ModelResources `json:"resources,omitempty"`
+
+	// EnvironmentVariables defines custom environment variables for the model
+	EnvironmentVariables map[string]string `json:"environmentVariables,omitempty"`
 }
 
 // ModelResources defines resource requirements

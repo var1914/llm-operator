@@ -39,6 +39,12 @@ spec:
           spec:
             description: LLMModelSpec defines the desired state of LLMModel
             properties:
+              environmentVariables:
+                additionalProperties:
+                  type: string
+                description: EnvironmentVariables defines custom environment variables
+                  for the model
+                type: object
               image:
                 description: Image is the container image for the model
                 type: string

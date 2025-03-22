@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -120,6 +121,24 @@ func (r *LLMDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 				},
 			},
 		}
+
+		envVars := []corev1.EnvVar{
+			{
+				Name:  "PORT",
+				Value: strconv.Itoa(deployment.Spec.Port),
+			},
+		}
+
+		// Add custom environment variables from the model
+		for name, value := range model.Spec.EnvironmentVariables {
+			envVars = append(envVars, corev1.EnvVar{
+				Name:  name,
+				Value: value,
+			})
+		}
+
+		// Set the environment variables to the container
+		k8sDeployment.Spec.Template.Spec.Containers[0].Env = envVars
 
 		// Add resource requirements if specified
 		if model.Spec.Resources.CPU != "" || model.Spec.Resources.Memory != "" {
