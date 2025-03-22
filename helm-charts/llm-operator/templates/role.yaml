@@ -4,11 +4,11 @@ metadata:
   name: llm-operator-role
 rules:
 # Allow operator to manage LLM CRs
-- apiGroups: ["llm.example.com"]
+- apiGroups: ["llm.llm.gitops"]
   resources: ["llmmodels", "llmdeployments"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 # Allow operator to update status subresource
-- apiGroups: ["llm.example.com"]
+- apiGroups: ["llm.llm.gitops"]
   resources: ["llmmodels/status", "llmdeployments/status"]
   verbs: ["get", "update", "patch"]
 # Allow operator to create and manage deployments and services
