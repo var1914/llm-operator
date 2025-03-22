@@ -16,8 +16,6 @@ Meanwhile, your DevOps team is drowning in YAML files trying to configure:
 * Custom metrics for autoscaling
 * Proper security contexts and network policies
 
-
-
 After days of back-and-forth, numerous failed deployments, and mounting frustration, what should have been a triumphant model release has turned into a cross-team nightmare. And you realize this same painful process will repeat for every new model version. 😓
 
 #### This is exactly why we need Kubernetes Operators and CRDs for LLM deployments! 
