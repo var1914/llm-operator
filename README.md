@@ -223,6 +223,3 @@ The `LLMDeployment` CRD defines how to deploy a model:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
